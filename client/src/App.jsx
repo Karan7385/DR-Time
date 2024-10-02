@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import 'flowbite';
+import Home from './home/Home.jsx';
+
+// Patients
+import Register from './home/Register.jsx';
+import RedirectHelper from './patients/RedirectHelper.jsx'; 
+import Dashboard from './patients/Dashboard.jsx';
+
+// Doctors
+import Doctor from './doctors/Doctor.jsx';
+import DoctorForm from './doctors/components/DoctorForm.jsx';
+
+// Services
+import Services from './services/Services.jsx';
 
 function App() {
-  const [count, setCount] = useState(0)
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    return (
+        <Router>
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/signup" element={<Register />} />
+                <Route path="/patient" element={<RedirectHelper />}>
+                    <Route path="dashboard" element={<Dashboard />} />
+                </Route>
+                <Route path="/doctors" element={<Doctor />} />
+                <Route path="/doctors/doctorForm" element={<DoctorForm />} />
+                <Route path="/services" element={<Services />} />
+                {/* Consider adding a dashboard for services if needed */}
+                {/* <Route path="/services/dashboard" element={<Dashboard />} /> */}
+            </Routes>
+        </Router>
+    );
 }
 
-export default App
+export default App;
