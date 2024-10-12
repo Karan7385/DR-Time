@@ -95,6 +95,8 @@ const Navbar = React.memo((props) => {
             const userType = response.data.user?.userType;
 
             if (userType && routes[userType]) {
+                console.log("Navigate..");
+                
                 navigate(routes[userType], { state: { user: response.data.user }, replace: true });
             } else {
                 throw new Error("Unexpected user type.");
@@ -145,7 +147,7 @@ const Navbar = React.memo((props) => {
                         <img src={navbarLogo} className="w-16 h-16 rounded-full" alt="DR. TIME Logo" />
                         <span className="self-center text-2xl md:text-4xl font-semibold montserrat whitespace-nowrap dark:text-white">
                             <strong><span className="text-green-500">DR</span>. <span className='text-blue-500'>TIME</span></strong>
-                        </span>
+                        </span> 
                     </Link>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 md:flex md:gap-5 md:justify-between md:items-center">
                         <div className="flex flex-col items-center justify-center">
@@ -164,7 +166,7 @@ const Navbar = React.memo((props) => {
                                     Sign In
                                 </span>
                             </button>
-                            <Link to="signup" className="text-gray-900 bg-gradient-to-r from-teal-200 to-lime-200 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-lime-200 dark:focus:ring-teal-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
+                            <Link to="/signup" className="text-gray-900 bg-gradient-to-r from-teal-200 to-lime-200 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-lime-200 dark:focus:ring-teal-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
                                 Sign Up
                             </Link>
                         </div>
@@ -343,7 +345,7 @@ const Navbar = React.memo((props) => {
                             <Label htmlFor="email" className="mb-2 block">
                                 Your email
                             </Label>
-                            <TextInput id="email" name="email" value={contactFormData.email} onChange={handleChangeContact} placeholder="name@company.com" type="email" />
+                            <TextInput id="contactemail" name="email" value={contactFormData.email} onChange={handleChangeContact} placeholder="name@company.com" type="email" />
                             {error.email && <p className="text-red-600">{error.email}</p>}
                         </div>
                         <div className="mb-6">

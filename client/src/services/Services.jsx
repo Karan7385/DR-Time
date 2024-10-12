@@ -84,7 +84,7 @@ function Services() {
                     </p>
                     <div className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
                         <Link
-                            to="/doctors/doctorForm"
+                            to="/doctorForm"
                             className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-3 text-white hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
                         >
                             <svg
@@ -99,7 +99,7 @@ function Services() {
                             <span>Doctors</span>
                         </Link>
                         <Link
-                            to="/"
+                            to="/pharmacyForm"
                             className="inline-flex items-center justify-center rounded-lg bg-green-600 px-5 py-3 text-white hover:bg-green-500 focus:outline-none focus:ring-4 focus:ring-green-300 transition duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
                         >
                             <svg

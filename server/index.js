@@ -1,18 +1,18 @@
-// Load environment variables from .env file
 require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
 const db = require('./config/db.js');
+const path = require('path');
 
-const authRoutes = require('./routes/auth.js');
+const authRoutes = require('./routes/authRoutes.js');
 const homeRoutes = require('./routes/home/homeRoutes.js');
-const doctorsRoutes = require('./routes/doctors/doctorsRoutes.js');
 
 const PORT = process.env.PORT || 8000;
 const MONGO_URI = process.env.MONGO_URI;
 
 const app = express();
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(cors());
 app.use(express.json());
 
@@ -31,4 +31,3 @@ startServer();
 
 app.use('/api/auth', authRoutes);
 app.use('/api', homeRoutes);
-app.use('/api/doctors', doctorsRoutes);

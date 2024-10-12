@@ -29,9 +29,10 @@ const Register = () => {
         emergencyContactNumber: '',
         comments: '',
         policyNumber: '',
-        photo: null,
         terms: true,
+        photo: null,
     });
+
 
     const [errors, setErrors] = useState({});
     const [states, setStates] = useState([]);
@@ -48,17 +49,18 @@ const Register = () => {
 
     const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        const { name, value, type, files, checked } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: type === 'file' ? files[0] : type === 'checkbox' ? checked : value || '',
-        }));
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    const handleFileChange = (e) => {
+        setFormData({ ...formData, photo: e.target.files[0] });
     };
 
     const validateForm = useCallback(() => {
         let tempErrors = {};
-        
+
         const requiredFields = [
             'fname', 'lname', 'dob', 'gender', 'mobile',
             'email', 'password', 'street', 'city',
@@ -83,11 +85,6 @@ const Register = () => {
             toast.error('Email is invalid');
         }
 
-        if (formData.emergencyContactNumber && !/^\d{10}$/.test(formData.emergencyContactNumber)) {
-            tempErrors.email = 'Emergency Contact Number must be 10 digits';
-            toast.error('Emergency Contact Number must be 10 digits');
-        }
-
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
     }, [formData]);
@@ -103,24 +100,26 @@ const Register = () => {
             });
 
             try {
-                const response = await axios.post('http://192.168.0.106:8080/api/auth/signup', formDataToSubmit, {
+                const response = await axios.post('http://localhost:8080/api/auth/signup', formData, {
                     headers: {
-                        'Content-Type': 'multipart/form-data' // Set proper headers for file upload
+                        'Content-Type': 'multipart/form-data'
                     }
                 });
 
                 setErrors({});
-                Cookies.set('sessionId', response.data.sessionId, { expires: 1 });
-                navigate('/patient/dashboard', { state: { user: response.data.message }, replace: true });
+                Cookies.set('token', response.data.token, { expires: 1, secure: true });
+                sessionStorage.setItem('userData', JSON.stringify(response.data.userData));
+                navigate('/patient/dashboard', { replace: true });
+
             } catch (error) {
-                toast.error(error.response.data.message);
-                notify();
-            } finally {
+                setErrors({});
                 setLoader(false);
+                console.log(error);
+                setErrors(error.response.data.message);
+                toast.error(error.response.data.message);
             }
         } else {
             setLoader(false);
-            notify();
         }
     };
 
@@ -168,7 +167,6 @@ const Register = () => {
 
     }, []);
 
-
     return loader ? (<LoaderPage />) :
         (
             <>
@@ -201,14 +199,14 @@ const Register = () => {
                                                 htmlFor="fname"
                                                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             >
-                                                First Name
+                                                First Name <span className='text-red-500'> *</span>
                                             </label>
                                             <input
                                                 type="text"
                                                 name="fname"
                                                 id="fname"
                                                 value={formData.fname}
-                                                onChange={handleChange}
+                                                onChange={handleInputChange}
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                 placeholder="Karan"
                                             />
@@ -227,7 +225,7 @@ const Register = () => {
                                                 name="mname"
                                                 id="mname"
                                                 value={formData.mname}
-                                                onChange={handleChange}
+                                                onChange={handleInputChange}
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                 placeholder="Premsingh"
                                             />
@@ -239,14 +237,14 @@ const Register = () => {
                                                 htmlFor="lname"
                                                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             >
-                                                Last Name
+                                                Last Name <span className='text-red-500'> *</span>
                                             </label>
                                             <input
                                                 type="text"
                                                 name="lname"
                                                 id="lname"
                                                 value={formData.lname}
-                                                onChange={handleChange}
+                                                onChange={handleInputChange}
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                 placeholder="Vishwakarma"
                                             />
@@ -260,7 +258,7 @@ const Register = () => {
                                                 htmlFor="dob"
                                                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             >
-                                                Date of Birth
+                                                Date of Birth <span className='text-red-500'> *</span>
                                             </label>
                                             <div className="relative max-w-sm">
                                                 <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -276,12 +274,10 @@ const Register = () => {
                                                 </div>
                                                 <input
                                                     id="datepicker-autohide"
-                                                    datepicker=""
-                                                    datepicker-autohide=""
                                                     name='dob'
-                                                    type="text"
+                                                    type="date"
                                                     value={formData.dob}
-                                                    onChange={handleChange}
+                                                    onChange={handleInputChange}
                                                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                     placeholder="Select date"
                                                 />
@@ -294,19 +290,19 @@ const Register = () => {
                                                 htmlFor="gender"
                                                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             >
-                                                Gender
+                                                Gender <span className='text-red-500'> *</span>
                                             </label>
                                             <select
                                                 id="gender"
                                                 name="gender"
                                                 value={formData.gender}
-                                                onChange={handleChange}
+                                                onChange={handleInputChange}
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                             >
                                                 <option value='' className='hidden'>Choose a Gender </option>
-                                                <option value="male">Male</option>
-                                                <option value="female">Female</option>
-                                                <option value="others">Others</option>
+                                                <option value="Male">Male</option>
+                                                <option value="Female">Female</option>
+                                                <option value="Others">Others</option>
                                             </select>
                                         </div>
 
@@ -316,7 +312,7 @@ const Register = () => {
                                                 htmlFor="mobile"
                                                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             >
-                                                Mobile Number
+                                                Mobile Number <span className='text-red-500'> *</span>
                                             </label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 start-0 top-0 flex items-center ps-3.5 pointer-events-none">
@@ -335,7 +331,7 @@ const Register = () => {
                                                     name="mobile"
                                                     id="mobile"
                                                     value={formData.mobile}
-                                                    onChange={handleChange}
+                                                    onChange={handleInputChange}
                                                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                     placeholder="7385256977"
                                                     maxLength={10}
@@ -350,14 +346,14 @@ const Register = () => {
                                             htmlFor="email"
                                             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                         >
-                                            Your email
+                                            Your email <span className='text-red-500'> *</span>
                                         </label>
                                         <input
                                             type="email"
                                             name="email"
                                             id="email"
                                             value={formData.email}
-                                            onChange={handleChange}
+                                            onChange={handleInputChange}
                                             placeholder="name@example.xyz"
                                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         />
@@ -369,14 +365,14 @@ const Register = () => {
                                             htmlFor="password"
                                             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                         >
-                                            Your Password
+                                            Your Password <span className='text-red-500'> *</span>
                                         </label>
                                         <input
                                             type="password"
                                             name="password"
                                             id="password"
                                             value={formData.password}
-                                            onChange={handleChange}
+                                            onChange={handleInputChange}
                                             placeholder="••••••••"
                                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         />
@@ -389,14 +385,14 @@ const Register = () => {
                                                 htmlFor="street"
                                                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             >
-                                                Street
+                                                Street <span className='text-red-500'> *</span>
                                             </label>
                                             <input
                                                 type="text"
                                                 name="street"
                                                 id="street"
                                                 value={formData.street}
-                                                onChange={handleChange}
+                                                onChange={handleInputChange}
                                                 placeholder='Street'
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                             />
@@ -408,13 +404,13 @@ const Register = () => {
                                                 htmlFor="city"
                                                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             >
-                                                City
+                                                City <span className='text-red-500'> *</span>
                                             </label>
                                             <select
                                                 id="city"
                                                 name="city"
                                                 value={formData.city}
-                                                onChange={handleChange}
+                                                onChange={handleInputChange}
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                             >
                                                 <option value='' className='hidden'>Choose a City</option>
@@ -430,13 +426,13 @@ const Register = () => {
                                                 htmlFor="state"
                                                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             >
-                                                State
+                                                State <span className='text-red-500'> *</span>
                                             </label>
                                             <select
                                                 id="state"
                                                 name="state"
                                                 value={formData.state}
-                                                onChange={handleChange}
+                                                onChange={handleInputChange}
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                             >
                                                 <option value='' className='hidden'>Choose a State </option>
@@ -451,7 +447,7 @@ const Register = () => {
                                                 htmlFor="zipCode"
                                                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             >
-                                                ZIP code
+                                                ZIP code <span className='text-red-500'> *</span>
                                             </label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 start-0 top-0 flex items-center ps-3.5 pointer-events-none">
@@ -473,7 +469,7 @@ const Register = () => {
                                                     placeholder="401303"
                                                     name='zipCode'
                                                     value={formData.zipCode}
-                                                    onChange={handleChange}
+                                                    onChange={handleInputChange}
                                                 />
                                             </div>
                                         </div>
@@ -487,14 +483,14 @@ const Register = () => {
                                                 htmlFor="emergencyContactName"
                                                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             >
-                                                Emergency Contact Name
+                                                Emergency Contact Name <span className='text-red-500'> *</span>
                                             </label>
                                             <input
                                                 type="text"
                                                 name="emergencyContactName"
                                                 id="emergencyContactName"
                                                 value={formData.emergencyContactName}
-                                                onChange={handleChange}
+                                                onChange={handleInputChange}
                                                 placeholder='John Doe'
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                             />
@@ -506,7 +502,7 @@ const Register = () => {
                                                 htmlFor="emergencyContactNumber"
                                                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             >
-                                                Emergency Contact Number
+                                                Emergency Contact Number <span className='text-red-500'> *</span>
                                             </label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 start-0 top-0 flex items-center ps-3.5 pointer-events-none">
@@ -525,7 +521,7 @@ const Register = () => {
                                                     name="emergencyContactNumber"
                                                     id="emergencyContactNumber"
                                                     value={formData.emergencyContactNumber}
-                                                    onChange={handleChange}
+                                                    onChange={handleInputChange}
                                                     placeholder='7385256977'
                                                     maxLength={10}
                                                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -546,7 +542,7 @@ const Register = () => {
                                                 name="comments"
                                                 id="comments"
                                                 value={formData.comments}
-                                                onChange={handleChange}
+                                                onChange={handleInputChange}
                                                 placeholder='// Comments'
                                                 maxLength={100}
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -559,14 +555,14 @@ const Register = () => {
                                                 htmlFor="policy-number"
                                                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             >
-                                                Policy Number
+                                                Policy Number <span className='text-red-500'> *</span>
                                             </label>
                                             <input
-                                                type="number"
+                                                type="text"
                                                 id="policy-numbert"
                                                 name='policyNumber'
                                                 value={formData.policyNumber}
-                                                onChange={handleChange}
+                                                onChange={handleInputChange}
                                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                 placeholder="852124793"
                                             />
@@ -578,14 +574,14 @@ const Register = () => {
                                             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                             htmlFor="file_input"
                                         >
-                                            Upload file
+                                            Upload file <span className='text-red-500'> *</span>
                                         </label>
                                         <input
                                             className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                                             id="file_input"
                                             name='photo'
                                             type="file"
-                                            onChange={handleChange}
+                                            onChange={handleFileChange}
                                         />
 
                                     </div>
@@ -597,8 +593,9 @@ const Register = () => {
                                                     id="terms"
                                                     name='terms'
                                                     value={formData.terms}
-                                                    onChange={handleChange}
+                                                    onChange={handleInputChange}
                                                     type="checkbox"
+                                                    required
                                                     className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
                                                 />
                                                 <label
@@ -614,7 +611,7 @@ const Register = () => {
                                                     data-modal-target="static-modal" data-modal-toggle="static-modal"
                                                     className="font-medium text-blue-600 hover:underline dark:text-blue-500"
                                                 >
-                                                    Terms and Conditions
+                                                    Terms and Conditions <span className='text-red-500'> *</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -699,7 +696,7 @@ const Register = () => {
                 )}
 
             </>
-        )
+        );
 }
 
 export default Register;

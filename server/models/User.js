@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     mname: { type: String },
     lname: { type: String, required: true },
     dob: { type: String, required: true },
-    gender: { type: String, enum: ['male', 'female', 'other'], required: true },
+    gender: { type: String, enum: ['Male', 'Female', 'Others'], required: true },
     mobile: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     emergencyContactName: { type: String },
     emergencyContactNumber: { type: String },
     comments: { type: String },
-    policyNumber: { type: Number, unique: true },
+    policyNumber: { type: String, unique: true },
     photo: { type: String, },
     terms: { type: Boolean },
     userType: {
